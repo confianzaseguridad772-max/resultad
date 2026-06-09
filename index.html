@@ -3,19 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sala de Control Electoral - ONPE REAL</title>
+    <title>SALA DE CONTROL ELECTORAL ONPE - 100% REAL</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #0b0f19;
-            --bg-card: #151b2c;
-            --primary: #38bdf8;
-            --candA: #00ea97; /* Verde vivo para Roberto Sánchez */
-            --candB: #ff6b00; /* Naranja vivo para Keiko Fujimori */
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #22c55e;
+            --bg-main: #0b0f19; --bg-card: #151b2c; --primary: #38bdf8;
+            --candA: #00ea97; --candB: #ff6b00; --text-main: #f8fafc;
+            --text-muted: #94a3b8; --accent: #22c55e;
         }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 24px; }
         .dashboard { max-width: 1200px; margin: 0 auto; }
@@ -35,53 +30,54 @@
         .card.candB .card-value { color: var(--candB); }
         .card.gap .card-value { color: #c084fc; }
         .control-panel { display: flex; justify-content: flex-end; margin-bottom: 24px; }
-        .btn-refresh { background: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25); }
+        .btn-refresh { background: linear-gradient(135deg, #22c55e 0%, #15803d 100%); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 14px; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); }
         .chart-section { background-color: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 24px; margin-bottom: 32px; }
         .chart-container { position: relative; height: 380px; }
         .table-section { background-color: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 24px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { padding: 14px 16px; color: var(--text-muted); font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
         td { padding: 16px; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
-        .badge-live { background-color: rgba(34, 197, 94, 0.15); color: var(--accent); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+        .badge-live { background-color: rgba(56, 189, 248, 0.15); color: var(--primary); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
     <header>
-        <h1>SALA DE MONITOREO REAL ONPE</h1>
-        <p>Datos en tiempo real obtenidos directamente desde tu Google Excel sin bloqueos</p>
+        <h1>SALA DE MONITOREO EN VIVO (ONPE DIRECTO)</h1>
+        <p>Datos leídos en tiempo real desde el portal oficial de resultados</p>
     </header>
 
-    <input type="hidden" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbybiLPK0gsaoi0DQfHyBQ-7n9purM-1drfLRJ70836jNtfzTnutS140lsOPSfFMmtET/exec">
+    <input type="hidden" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbyrh_mSu_VLSEskCUQ0ba2EKN_vm2NEmfgV6Rp4voQhCwTkWU0hSjL99Pfeau6d0sev/exec">
 
     <div class="control-panel">
-        <button class="btn-refresh" onclick="cargarDatosDesdeGoogle()">🔄 Actualizar Dashboard</button>
+        <button class="btn-refresh" onclick="consultarOnpeDirecto()">⚡ Forzar Consulta ONPE Real</button>
     </div>
 
     <div class="live-cards">
-        <div class="card actas"><div class="card-label">Actas Procesadas</div><div class="card-value" id="live-actas">0.000%</div></div>
-        <div class="card candA"><div class="card-label">Roberto Sánchez P.</div><div class="card-value" id="live-candA">0.000%</div></div>
-        <div class="card candB"><div class="card-label">Keiko Fujimori</div><div class="card-value" id="live-candB">0.000%</div></div>
-        <div class="card gap"><div class="card-label">Diferencia Real</div><div class="card-value" id="live-gap">0.000%</div></div>
+        <div class="card actas"><div class="card-label">Actas Procesadas</div><div class="card-value" id="live-actas">Cargando...</div></div>
+        <div class="card candA"><div class="card-label">Roberto Sánchez P.</div><div class="card-value" id="live-candA">Cargando...</div></div>
+        <div class="card candB"><div class="card-label">Keiko Fujimori</div><div class="card-value" id="live-candB">Cargando...</div></div>
+        <div class="card gap"><div class="card-label">Diferencia Real</div><div class="card-value" id="live-gap">Cargando...</div></div>
     </div>
 
     <div class="chart-section"><div class="chart-container"><canvas id="graficoElectoral"></canvas></div></div>
 
     <div class="table-section">
-        <h3>Historial Verificado por Base de Datos (Últimas 20 actualizaciones)</h3>
+        <h3>Histórico Grabado en Excel (Últimos Cambios Detectados)</h3>
         <table id="tablaHistorial">
             <thead>
-                <tr><th>ID</th><th>Fecha y Hora</th><th>% Actas</th><th>% Sánchez P.</th><th>% Keiko F.</th><th>Brecha</th><th>Estado</th></tr>
+                <tr><th>ID</th><th>Fecha y Hora de Registro</th><th>% Actas</th><th>% Sánchez P.</th><th>% Keiko F.</th><th>Brecha</th><th>Origen</th></tr>
             </thead>
-            <tbody><tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Sincronizando con Google Excel...</td></tr></tbody>
+            <tbody><tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Sincronizando curvas históricas...</td></tr></tbody>
         </table>
     </div>
 </div>
 
 <script>
     let chartOnpe;
-    
+    let historialLocal = [];
+
     function inicializarGrafico() {
         const ctx = document.getElementById('graficoElectoral').getContext('2d');
         Chart.defaults.color = '#94a3b8';
@@ -92,47 +88,85 @@
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'Progreso Actas', data: [], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.05)', fill: true, tension: 0.3, yAxisID: 'y' },
-                    { label: 'Sánchez Palomino', data: [], borderColor: '#00ea97', borderWidth: 3, tension: 0.3, yAxisID: 'yVotos' },
-                    { label: 'Keiko Fujimori', data: [], borderColor: '#ff6b00', borderWidth: 3, tension: 0.3, yAxisID: 'yVotos' }
+                    { label: 'Progreso Actas', data: [], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.05)', fill: true, tension: 0.2, yAxisID: 'y' },
+                    { label: 'Sánchez Palomino', data: [], borderColor: '#00ea97', borderWidth: 3, tension: 0.2, yAxisID: 'yVotos' },
+                    { label: 'Keiko Fujimori', data: [], borderColor: '#ff6b00', borderWidth: 3, tension: 0.2, yAxisID: 'yVotos' }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
                 scales: {
-                    y: { type: 'linear', position: 'left', min: 90, max: 100, title: { display: true, text: 'Actas (%)' } },
-                    yVotos: { type: 'linear', position: 'right', min: 45, max: 55, title: { display: true, text: 'Candidatos (%)' }, grid: { drawOnChartArea: false } }
+                    y: { type: 'linear', position: 'left', min: 90, max: 100 },
+                    yVotos: { type: 'linear', position: 'right', min: 45, max: 55, grid: { drawOnChartArea: false } }
                 }
             }
         });
     }
 
-    function cargarDatosDesdeGoogle() {
-        const url = document.getElementById('scriptUrl').value;
-        
-        fetch(url, { method: 'GET' })
+    // CONSULTA DIRECTA AL SERVIDOR DE LA ONPE (SIN PASAR POR EXCEL PRIMERO)
+    function consultarOnpeDirecto() {
+        const apiOnpe = "https://resultados2da.onpe.gob.pe/api/resumen/general";
+        // Usamos un proxy inverso abierto para saltar el CORS del navegador de manera directa
+        const urlProxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(apiOnpe);
+
+        fetch(urlProxy)
+        .then(res => { if (res.ok) return res.json(); throw new Error('Error de red'); })
+        .then(wrapper => {
+            const dataOnpe = JSON.parse(wrapper.contents);
+            
+            // Extracción nativa desde las variables del servidor oficial de la ONPE
+            const actasProcesadas = parseFloat(dataOnpe.procesados);
+            const vSanchez = parseFloat(dataOnpe.candidatos[0].porcentaje);
+            const vKeiko = parseFloat(dataOnpe.candidatos[1].porcentaje);
+            const diferencia = Math.abs(vSanchez - vKeiko);
+
+            // Pintar inmediatamente las tarjetas superiores con el dato real de la ONPE
+            document.getElementById('live-actas').innerText = actasProcesadas.toFixed(3) + '%';
+            document.getElementById('live-candA').innerText = vSanchez.toFixed(3) + '%';
+            document.getElementById('live-candB').innerText = vKeiko.toFixed(3) + '%';
+            document.getElementById('live-gap').innerText = diferencia.toFixed(3) + '%';
+
+            // Guardar este registro en tu Excel si es un cambio nuevo
+            enviarRegistroAExcel(actasProcesadas, vSanchez, vKeiko);
+        })
+        .catch(err => {
+            console.error("Fallo al conectar con ONPE:", err);
+        });
+    }
+
+    // ENVÍA EL DATO VERDADERO DE LA PANTALLA AL GOOGLE EXCEL
+    function enviarRegistroAExcel(actas, candA, candB) {
+        const urlExcel = document.getElementById('scriptUrl').value;
+        const paquete = { actas: actas, candA: candA, candB: candB };
+
+        fetch(urlExcel, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(paquete)
+        }).then(() => {
+            // Una vez enviado, refresca la tabla del gráfico leyendo el historial del Excel
+            recuperarHistorialExcel();
+        });
+    }
+
+    // TRAE LOS ÚLTIMOS 20 PUNTOS REGISTRADOS PARA PINTAR LA CURVA
+    function recuperarHistorialExcel() {
+        const urlExcel = document.getElementById('scriptUrl').value;
+
+        fetch(urlExcel, { method: 'GET' })
         .then(res => res.json())
         .then(datos => {
-            if (!datos || datos.length === 0) {
-                document.querySelector("#tablaHistorial tbody").innerHTML = "<tr><td colspan='7' style='text-align:center;'>Esperando que el script realice la primera captura automática en tu Excel...</td></tr>";
-                return;
-            }
+            if (!datos || datos.length === 0) return;
 
-            // Tomar el último registro real de la ONPE guardado por tu Script de Google
-            const actual = datos[datos.length - 1];
-            document.getElementById('live-actas').innerText = actual.actas.toFixed(3) + '%';
-            document.getElementById('live-candA').innerText = actual.candA.toFixed(3) + '%';
-            document.getElementById('live-candB').innerText = actual.candB.toFixed(3) + '%';
-            document.getElementById('live-gap').innerText = Math.abs(actual.candA - actual.candB).toFixed(3) + '%';
-
-            // Actualizar curvas suavizadas de 20 puntos
+            // Actualizar líneas del gráfico
             chartOnpe.data.labels = datos.map(item => item.fecha.split(' ')[1] || item.fecha);
             chartOnpe.data.datasets[0].data = datos.map(item => item.actas);
             chartOnpe.data.datasets[1].data = datos.map(item => item.candA);
             chartOnpe.data.datasets[2].data = datos.map(item => item.candB);
             chartOnpe.update();
 
-            // Rellenar tabla
+            // Dibujar tabla
             const tbody = document.querySelector("#tablaHistorial tbody");
             tbody.innerHTML = "";
             [...datos].reverse().forEach(item => {
@@ -144,22 +178,19 @@
                     <td style="color:var(--candA)">${item.candA.toFixed(3)}%</td>
                     <td style="color:var(--candB)">${item.candB.toFixed(3)}%</td>
                     <td style="color:#c084fc; font-weight:600;">${Math.abs(item.candA - item.candB).toFixed(3)}%</td>
-                    <td><span class="badge-live">Real</span></td>
+                    <td><span class="badge-live">ONPE Oficial</span></td>
                 `;
                 tbody.appendChild(tr);
             });
-        })
-        .catch(err => console.error("Error leyendo flujo de datos: ", err));
+        }).catch(e => console.log("Historial vacío temporalmente. Esperando flujos..."));
     }
 
     window.onload = function() {
-        // Forzamos la limpieza de rastros simulados anteriores
-        localStorage.clear();
         inicializarGrafico();
-        cargarDatosDesdeGoogle();
+        consultarOnpeDirecto();
         
-        // Auto-sincronización visual de tu web cada 30 segundos
-        setInterval(cargarDatosDesdeGoogle, 30000);
+        // Ejecuta la consulta real a la ONPE automáticamente cada 3 minutos (180000ms)
+        setInterval(consultarOnpeDirecto, 180000);
     };
 </script>
 </body>
