@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoreo Electoral ONPE - 20 Puntos</title>
+    <title>Monitoreo Electoral REAL ONPE</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f7fafc; margin: 0; padding: 20px; color: #2d3748; }
@@ -14,7 +14,7 @@
         input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; background-color: #edf2f7; color: #4a5568; }
         .actions-bar { display: flex; gap: 15px; margin-bottom: 25px; }
         button { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 14px; transition: background 0.2s; }
-        .btn-update { background-color: #3182ce; } .btn-update:hover { background-color: #2b6cb0; }
+        .btn-update { background-color: #e53e3e; } .btn-update:hover { background-color: #c53030; }
         .btn-excel { background-color: #38a169; } .btn-excel:hover { background-color: #2f855a; }
         .canvas-holder { position: relative; height: 400px; margin-bottom: 30px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; text-align: center; }
@@ -28,16 +28,16 @@
 <body>
 
 <div class="container">
-    <h1>Análisis de Avance Electoral (ONPE)</h1>
-    <p class="subtitle">Seguimiento en curva de los últimos 20 estados de actualización y enlace automático a Google Sheets</p>
+    <h1>Análisis de Avance Electoral REAL (ONPE)</h1>
+    <p class="subtitle">Conexión en vivo puenteada por Google Apps Script libre de bloqueos CORS</p>
 
     <div class="config-card">
         <label style="font-weight: bold; color: #2c5282;">URL de Google Apps Script Vinculada:</label>
-        <input type="text" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbwhlSowE4bYiMGed4wL89w99DeHrblbTuXdKghtH8l4oussy8WLIzYQ6vkxhNB0RZT5/exec" readonly>
+        <input type="text" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbxNrzJAtkkIS3-ZeIiIKdszhqSQag4okqGSFPsXDpmUsCa_iX8Hwcb4HdsY-DjZxHVJ/exec" readonly>
     </div>
 
     <div class="actions-bar">
-        <button class="btn-update" onclick="adquirirNuevaActualizacion()">🔄 Capturar / Simular Actualización</button>
+        <button class="btn-update" onclick="adquirirNuevaActualizacion()">⚡ Consultar Datos Reales de la ONPE</button>
         <button class="btn-excel" onclick="transferirDatosAGoogleExcel()">📤 Exportar Pendientes a Google Excel</button>
     </div>
 
@@ -45,15 +45,15 @@
         <canvas id="graficoOnpe"></canvas>
     </div>
 
-    <h3>Registro de Datos (Últimas 20 Transmisiones)</h3>
+    <h3>Registro de Datos Reales (Últimas 20 Transmisiones)</h3>
     <table id="tablaDatos">
         <thead>
             <tr>
                 <th>Iteración</th>
                 <th>Fecha y Hora</th>
                 <th>% Actas Procesadas</th>
-                <th>% Candidato A</th>
-                <th>% Candidato B</th>
+                <th>% Sánchez Palomino</th>
+                <th>% Keiko Fujimori</th>
                 <th>Estado Sincronización</th>
             </tr>
         </thead>
@@ -62,52 +62,26 @@
 </div>
 
 <script>
-    // Inicialización del arreglo histórico guardado en el navegador (Máximo 20 elementos)
-    let registrosOnpe = JSON.parse(localStorage.getItem('registros_onpe_data')) || [
-        { id: 1, fecha: "09/06/2026 12:00", actas: 94.10, candA: 50.15, candB: 49.85, sync: true },
-        { id: 2, fecha: "09/06/2026 13:00", actas: 95.30, candA: 50.08, candB: 49.92, sync: true },
-        { id: 3, fecha: "09/06/2026 14:00", actas: 96.75, candA: 49.97, candB: 50.03, sync: false }
-    ];
-
+    let registrosOnpe = JSON.parse(localStorage.getItem('registros_onpe_data')) || [];
     let chartObjeto;
 
     function iniciarComponenteGrafico() {
         const ctx = document.getElementById('graficoOnpe').getContext('2d');
-        
         chartObjeto = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: registrosOnpe.map(r => r.fecha.split(' ')[1]), // Extrae solo la hora para el eje horizontal
+                labels: registrosOnpe.map(r => r.fecha.split(' ')[1] || ''),
                 datasets: [
-                    {
-                        label: '% Actas Procesadas',
-                        data: registrosOnpe.map(r => r.actas),
-                        borderColor: '#3182ce',
-                        backgroundColor: 'rgba(49,130,206,0.05)',
-                        tension: 0.4, // Suaviza la curva
-                        yAxisID: 'yActas'
-                    },
-                    {
-                        label: '% Votos Candidato A',
-                        data: registrosOnpe.map(r => r.candA),
-                        borderColor: '#e53e3e',
-                        tension: 0.4,
-                        yAxisID: 'yVotos'
-                    },
-                    {
-                        label: '% Votos Candidato B',
-                        data: registrosOnpe.map(r => r.candB),
-                        borderColor: '#dd6b20',
-                        tension: 0.4,
-                        yAxisID: 'yVotos'
-                    }
+                    { label: '% Actas Procesadas', data: registrosOnpe.map(r => r.actas), borderColor: '#3182ce', backgroundColor: 'rgba(49,130,206,0.05)', tension: 0.4, yAxisID: 'yActas' },
+                    { label: '% Sánchez Palomino', data: registrosOnpe.map(r => r.candA), borderColor: '#004477', tension: 0.4, yAxisID: 'yVotos' },
+                    { label: '% Keiko Fujimori', data: registrosOnpe.map(r => r.candB), borderColor: '#ff6600', tension: 0.4, yAxisID: 'yVotos' }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    yActas: { type: 'linear', position: 'left', title: { display: true, text: 'Progreso de Actas (%)' }, min: 85, max: 100 },
+                    yActas: { type: 'linear', position: 'left', title: { display: true, text: 'Progreso de Actas (%)' }, min: 90, max: 100 },
                     yVotos: { type: 'linear', position: 'right', title: { display: true, text: 'Votos Válidos (%)' }, min: 45, max: 55, grid: { drawOnChartArea: false } }
                 }
             }
@@ -117,84 +91,97 @@
     function renderizarTabla() {
         const tbody = document.querySelector("#tablaDatos tbody");
         tbody.innerHTML = "";
-        
-        // Muestra los registros ordenados desde el más reciente arriba
+        if(registrosOnpe.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6'>No hay datos registrados todavía. Haz clic en el botón rojo.</td></tr>";
+            return;
+        }
         [...registrosOnpe].reverse().forEach(r => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${r.id}</td>
                 <td>${r.fecha}</td>
                 <td><b>${r.actas}%</b></td>
-                <td style="color:#e53e3e">${r.candA}%</td>
-                <td style="color:#dd6b20">${r.candB}%</td>
+                <td style="color:#004477">${r.candA}%</td>
+                <td style="color:#ff6600">${r.candB}%</td>
                 <td><span class="badge ${r.sync ? 'synced' : 'pending'}">${r.sync ? 'En Excel' : 'Pendiente'}</span></td>
             `;
             tbody.appendChild(row);
         });
     }
 
+    // LLAMADA REAL: Usa Google Script para saltarse el CORS y traer los datos verdaderos de la ONPE
     function adquirirNuevaActualizacion() {
-        const anterior = registrosOnpe[registrosOnpe.length - 1];
-        if (anterior.actas >= 100) { alert("El conteo simulado ha finalizado al 100%."); return; }
-
-        const fechaActual = new Date();
-        const fechaTexto = `${fechaActual.toLocaleDateString('es-PE')} ${fechaActual.toTimeString().substring(0,5)}`;
+        const urlScript = document.getElementById('scriptUrl').value.trim();
         
-        // Simulación controlada con incrementos reales según comportamiento de curvas de la ONPE
-        const saltoActas = parseFloat((Math.random() * (1.1 - 0.3) + 0.3).toFixed(2));
-        const nuevasActas = Math.min(100, parseFloat((anterior.actas + saltoActas).toFixed(2)));
-        
-        const variacionPorcentual = parseFloat((Math.random() * (0.12 - (-0.12)) + (-0.12)).toFixed(2));
-        const nuevoA = parseFloat((anterior.candA + variacionPorcentual).toFixed(2));
-        const nuevoB = parseFloat((100 - nuevoA).toFixed(2));
+        // Animación temporal en el botón
+        const btn = document.querySelector(".btn-update");
+        const btnOriginalText = btn.innerText;
+        btn.innerText = "Conectando con Servidores ONPE...";
+        btn.disabled = true;
 
-        registrosOnpe.push({
-            id: anterior.id + 1,
-            fecha: fechaTexto,
-            actas: nuevasActas,
-            candA: nuevoA,
-            candB: nuevoB,
-            sync: false
+        fetch(urlScript)
+        .then(response => response.json())
+        .then(dataReal => {
+            const fechaActual = new Date();
+            const fechaTexto = `${fechaActual.toLocaleDateString('es-PE')} ${fechaActual.toTimeString().substring(0,5)}`;
+            const nuevoId = registrosOnpe.length > 0 ? registrosOnpe[registrosOnpe.length - 1].id + 1 : 1;
+
+            // Evitamos duplicar registros idénticos consecutivos en la gráfica
+            if(registrosOnpe.length > 0 && registrosOnpe[registrosOnpe.length - 1].actas === dataReal.actas) {
+                alert("La ONPE no ha lanzado ninguna actualización nueva en los últimos minutos. Sigue mostrando: " + dataReal.actas + "%");
+                return;
+            }
+
+            registrosOnpe.push({
+                id: nuevoId,
+                fecha: fechaTexto,
+                actas: dataReal.actas,
+                candA: dataReal.candA,
+                candB: dataReal.candB,
+                sync: false
+            });
+
+            if (registrosOnpe.length > 20) { registrosOnpe.shift(); }
+
+            localStorage.setItem('registros_onpe_data', JSON.stringify(registrosOnpe));
+            
+            // Actualizar la Curva
+            chartObjeto.data.labels = registrosOnpe.map(r => r.fecha.split(' ')[1]);
+            chartObjeto.data.datasets[0].data = registrosOnpe.map(r => r.actas);
+            chartObjeto.data.datasets[1].data = registrosOnpe.map(r => r.candA);
+            chartObjeto.data.datasets[2].data = registrosOnpe.map(r => r.candB);
+            chartObjeto.update();
+            
+            renderizarTabla();
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error de conexión. Asegúrate de haber publicado los cambios de tu Apps Script como una 'Nueva Versión'.");
+        })
+        .finally(() => {
+            btn.innerText = btnOriginalText;
+            btn.disabled = false;
         });
-
-        // RESTRICCIÓN CLAVE: Mantener únicamente los últimos 20 puntos en la curva
-        if (registrosOnpe.length > 20) { registrosOnpe.shift(); }
-
-        localStorage.setItem('registros_onpe_data', JSON.stringify(registrosOnpe));
-        
-        // Recargar datos en el gráfico en tiempo real
-        chartObjeto.data.labels = registrosOnpe.map(r => r.fecha.split(' ')[1]);
-        chartObjeto.data.datasets[0].data = registrosOnpe.map(r => r.actas);
-        chartObjeto.data.datasets[1].data = registrosOnpe.map(r => r.candA);
-        chartObjeto.data.datasets[2].data = registrosOnpe.map(r => r.candB);
-        chartObjeto.update();
-        
-        renderizarTabla();
     }
 
-    // Envío asíncrono a Google Sheets por medio de tu API Web App de Google Apps Script
     function transferirDatosAGoogleExcel() {
         const urlDestino = document.getElementById('scriptUrl').value.trim();
-        if (!urlDestino) { alert("Por favor ingresa una URL válida de Apps Script."); return; }
-
         const filasPendientes = registrosOnpe.filter(r => !r.sync);
-        if (filasPendientes.length === 0) { alert("No hay nuevas actualizaciones pendientes de envío."); return; }
+        if (filasPendientes.length === 0) { alert("No hay actualizaciones nuevas para mandar."); return; }
 
         let promesasEnvio = filasPendientes.map(elemento => {
             return fetch(urlDestino, {
                 method: 'POST',
-                mode: 'no-cors', // Permite saltar barreras CORS entre GitHub y Google Scripts
+                mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(elemento)
-            }).then(() => {
-                elemento.sync = true;
-            }).catch(err => console.log("Fallo en red al procesar ítem ID: " + elemento.id, err));
+            }).then(() => { elemento.sync = true; });
         });
 
         Promise.all(promesasEnvio).then(() => {
             localStorage.setItem('registros_onpe_data', JSON.stringify(registrosOnpe));
             renderizarTabla();
-            alert("¡Sincronización Completa! Los datos ya se reflejan en tu Google Sheets.");
+            alert("¡Sincronizado! Revisa tu documento Excel.");
         });
     }
 
