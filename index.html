@@ -3,191 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoreo Electoral REAL ONPE</title>
+    <title>Sala de Control Electoral - ONPE 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f7fafc; margin: 0; padding: 20px; color: #2d3748; }
-        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        h1 { color: #1a365d; text-align: center; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #718096; margin-bottom: 25px; font-size: 14px; }
-        .config-card { background-color: #ebf8ff; border: 1px solid #bee3f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-        input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; background-color: #edf2f7; color: #4a5568; }
-        .actions-bar { display: flex; gap: 15px; margin-bottom: 25px; }
-        button { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 14px; transition: background 0.2s; }
-        .btn-update { background-color: #e53e3e; } .btn-update:hover { background-color: #c53030; }
-        .btn-excel { background-color: #38a169; } .btn-excel:hover { background-color: #2f855a; }
-        .canvas-holder { position: relative; height: 400px; margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; text-align: center; }
-        th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        th { background-color: #edf2f7; color: #4a5568; }
-        .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
-        .synced { background-color: #c6f6d5; color: #22543d; }
-        .pending { background-color: #feebc8; color: #744210; }
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #151b2c;
+            --primary: #38bdf8;
+            --candA: #0284c7;
+            --candB: #ea580c;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #22c55e;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 15px;
+        }
+
+        /* Panel Superior: Tarjetas de Datos */
+        .live-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+        }
+
+        .card.actas::before { background-color: var(--primary); }
+        .card.candA::before { background-color: var(--candA); }
+        .card.candB::before { background-color: var(--candB); }
+        .card.gap::before { background-color: #a855f7; }
+
+        .card-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .card.candA .card-value { color: #38bdf8; }
+        .card.candB .card-value { color: #f97316; }
+        .card.gap .card-value { color: #c084fc; }
+
+        /* Botón de Refresco */
+        .control-panel {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 24px;
+        }
+
+        .btn-refresh {
+            background: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+        }
+
+        .btn-refresh:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Sección del Gráfico */
+        .chart-section {
+            background-color: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 380px;
+        }
+
+        /* Tabla Estilo Cyberpunk */
+        .table-section {
+            background-color: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        .table-section h3 {
+            margin: 0 0 20px 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 14px 16px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 16px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge-live {
+            background-color: rgba(34, 197, 94, 0.15);
+            color: var(--accent);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Análisis de Avance Electoral REAL (ONPE)</h1>
-    <p class="subtitle">Conexión en vivo puenteada por Google Apps Script libre de bloqueos CORS</p>
+<div class="dashboard">
+    <header>
+        <h1>SALA DE MONITOREO ELECTORAL</h1>
+        <p>Datos sincronizados de forma transparente mediante Google Sheets</p>
+    </header>
 
-    <div class="config-card">
-        <label style="font-weight: bold; color: #2c5282;">URL de Google Apps Script Vinculada:</label>
-        <input type="text" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbxVtlZ5Am6Dz7M_4nVg5urVPx1yD8vBn6zcc8ceD-u_OFMuTD45eGHsVWd3WpCtMydT/exec" readonly>
+    <input type="hidden" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbxADvzrw6wqcCZks6mrsCUfzR_ibx2RRW_dOvBG2LApmuUfbZ8yykZoTYBLbkoz_1-E/exec">
+
+    <div class="control-panel">
+        <button class="btn-refresh" onclick="cargarDatosDesdeGoogle()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Actualizar Dashboard
+        </button>
     </div>
 
-    <div class="actions-bar">
-        <button class="btn-update" onclick="adquirirNuevaActualizacion()">⚡ Consultar Datos Reales de la ONPE</button>
-        <button class="btn-excel" onclick="transferirDatosAGoogleExcel()">📤 Exportar Pendientes a Google Excel</button>
+    <div class="live-cards">
+        <div class="card actas">
+            <div class="card-label">Actas Procesadas</div>
+            <div class="card-value" id="live-actas">0.00%</div>
+        </div>
+        <div class="card candA">
+            <div class="card-label">Sánchez Palomino</div>
+            <div class="card-value" id="live-candA">0.00%</div>
+        </div>
+        <div class="card candB">
+            <div class="card-label">Keiko Fujimori</div>
+            <div class="card-value" id="live-candB">0.00%</div>
+        </div>
+        <div class="card gap">
+            <div class="card-label">Diferencia Numérica</div>
+            <div class="card-value" id="live-gap">0.00%</div>
+        </div>
     </div>
 
-    <div class="canvas-holder">
-        <canvas id="graficoOnpe"></canvas>
+    <div class="chart-section">
+        <div class="chart-container">
+            <canvas id="graficoElectoral"></canvas>
+        </div>
     </div>
 
-    <h3>Registro de Datos Reales (Últimas 20 Transmisiones)</h3>
-    <table id="tablaDatos">
-        <thead>
-            <tr>
-                <th>Iteración</th>
-                <th>Fecha y Hora</th>
-                <th>% Actas Procesadas</th>
-                <th>% Sánchez Palomino</th>
-                <th>% Keiko Fujimori</th>
-                <th>Estado Sincronización</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <div class="table-section">
+        <h3>Historial de Transmisiones (Últimos 20 Estados)</h3>
+        <div class="table-wrapper">
+            <table id="tablaHistorial">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha y Hora</th>
+                        <th>% Actas</th>
+                        <th>% Sánchez P.</th>
+                        <th>% Keiko F.</th>
+                        <th>Brecha</th>
+                        <th>Origen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Cargando flujos de datos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <script>
-    let registrosOnpe = JSON.parse(localStorage.getItem('registros_onpe_data')) || [];
-    let chartObjeto;
+    let chartOnpe;
+    
+    function inicializarGraficoVacio() {
+        const ctx = document.getElementById('graficoElectoral').getContext('2d');
+        
+        // Configuraciones estéticas de Chart.js para entorno oscuro
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
 
-    function iniciarComponenteGrafico() {
-        const ctx = document.getElementById('graficoOnpe').getContext('2d');
-        chartObjeto = new Chart(ctx, {
+        chartOnpe = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: registrosOnpe.map(r => r.fecha.split(' ')[1] || ''),
+                labels: [],
                 datasets: [
-                    { label: '% Actas Procesadas', data: registrosOnpe.map(r => r.actas), borderColor: '#3182ce', backgroundColor: 'rgba(49,130,206,0.05)', tension: 0.4, yAxisID: 'yActas' },
-                    { label: '% Sánchez Palomino', data: registrosOnpe.map(r => r.candA), borderColor: '#004477', tension: 0.4, yAxisID: 'yVotos' },
-                    { label: '% Keiko Fujimori', data: registrosOnpe.map(r => r.candB), borderColor: '#ff6600', tension: 0.4, yAxisID: 'yVotos' }
+                    { label: 'Progreso Actas', data: [], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.05)', fill: true, tension: 0.35, yAxisID: 'y' },
+                    { label: 'Sánchez Palomino', data: [], borderColor: '#0284c7', borderWidth: 3, tension: 0.35, yAxisID: 'yVotos' },
+                    { label: 'Keiko Fujimori', data: [], borderColor: '#ea580c', borderWidth: 3, tension: 0.35, yAxisID: 'yVotos' }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { font: { family: 'Plus Jakarta Sans', weight: '600' } } }
+                },
                 scales: {
-                    yActas: { type: 'linear', position: 'left', title: { display: true, text: 'Progreso de Actas (%)' }, min: 90, max: 100 },
-                    yVotos: { type: 'linear', position: 'right', title: { display: true, text: 'Votos Válidos (%)' }, min: 45, max: 55, grid: { drawOnChartArea: false } }
+                    y: { type: 'linear', position: 'left', min: 80, max: 100, title: { display: true, text: 'Actas (%)' } },
+                    yVotos: { type: 'linear', position: 'right', min: 45, max: 55, title: { display: true, text: 'Candidatos (%)' }, grid: { drawOnChartArea: false } }
                 }
             }
         });
     }
 
-    function renderizarTabla() {
-        const tbody = document.querySelector("#tablaDatos tbody");
-        tbody.innerHTML = "";
-        if(registrosOnpe.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='6'>No hay datos registrados todavía. Haz clic en el botón rojo.</td></tr>";
-            return;
-        }
-        [...registrosOnpe].reverse().forEach(r => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${r.id}</td>
-                <td>${r.fecha}</td>
-                <td><b>${r.actas}%</b></td>
-                <td style="color:#004477">${r.candA}%</td>
-                <td style="color:#ff6600">${r.candB}%</td>
-                <td><span class="badge ${r.sync ? 'synced' : 'pending'}">${r.sync ? 'En Excel' : 'Pendiente'}</span></td>
-            `;
-            tbody.appendChild(row);
-        });
-    }
-
-    // LLAMADA REAL: Usa Google Script para saltarse el CORS y traer los datos verdaderos de la ONPE
-    function adquirirNuevaActualizacion() {
-        const urlScript = document.getElementById('scriptUrl').value.trim();
+    function cargarDatosDesdeGoogle() {
+        const url = document.getElementById('scriptUrl').value;
         
-        // Animación temporal en el botón
-        const btn = document.querySelector(".btn-update");
-        const btnOriginalText = btn.innerText;
-        btn.innerText = "Conectando con Servidores ONPE...";
-        btn.disabled = true;
+        fetch(url)
+        .then(res => res.json())
+        .then(datos => {
+            if(datos.length === 0) return;
 
-        fetch(urlScript)
-        .then(response => response.json())
-        .then(dataReal => {
-            const fechaActual = new Date();
-            const fechaTexto = `${fechaActual.toLocaleDateString('es-PE')} ${fechaActual.toTimeString().substring(0,5)}`;
-            const nuevoId = registrosOnpe.length > 0 ? registrosOnpe[registrosOnpe.length - 1].id + 1 : 1;
+            // 1. Tomar el último registro disponible para las tarjetas de la parte superior
+            const deMomento = datos[datos.length - 1];
+            document.getElementById('live-actas').innerText = deMomento.actas.toFixed(3) + '%';
+            document.getElementById('live-candA').innerText = deMomento.candA.toFixed(3) + '%';
+            document.getElementById('live-candB').innerText = deMomento.candB.toFixed(3) + '%';
+            
+            // Calcular diferencia absoluta en puntos porcentuales
+            const diferencia = Math.abs(deMomento.candA - deMomento.candB).toFixed(3);
+            document.getElementById('live-gap').innerText = diferencia + '%';
 
-            // Evitamos duplicar registros idénticos consecutivos en la gráfica
-            if(registrosOnpe.length > 0 && registrosOnpe[registrosOnpe.length - 1].actas === dataReal.actas) {
-                alert("La ONPE no ha lanzado ninguna actualización nueva en los últimos minutos. Sigue mostrando: " + dataReal.actas + "%");
-                return;
-            }
+            // 2. Refrescar los ejes e información del gráfico (máximo de 20 puntos)
+            chartOnpe.data.labels = datos.map(item => item.fecha.split(' ')[1] || item.fecha);
+            chartOnpe.data.datasets[0].data = datos.map(item => item.actas);
+            chartOnpe.data.datasets[1].data = datos.map(item => item.candA);
+            chartOnpe.data.datasets[2].data = datos.map(item => item.candB);
+            chartOnpe.update();
 
-            registrosOnpe.push({
-                id: nuevoId,
-                fecha: fechaTexto,
-                actas: dataReal.actas,
-                candA: dataReal.candA,
-                candB: dataReal.candB,
-                sync: false
+            // 3. Imprimir el historial en la tabla cyberpunk
+            const tbody = document.querySelector("#tablaHistorial tbody");
+            tbody.innerHTML = "";
+            
+            // Invertimos el orden para que veas lo más reciente arriba inmediatamente
+            [...datos].reverse().forEach(item => {
+                const tr = document.createElement('tr');
+                const diffFila = Math.abs(item.candA - item.candB).toFixed(3);
+                
+                tr.innerHTML = `
+                    <td style="font-weight:600; color:var(--primary)">#${item.id}</td>
+                    <td>${item.fecha}</td>
+                    <td style="font-weight:600">${item.actas.toFixed(3)}%</td>
+                    <td style="color:#38bdf8">${item.candA.toFixed(3)}%</td>
+                    <td style="color:#f97316">${item.candB.toFixed(3)}%</td>
+                    <td style="color:#c084fc; font-weight:600">± ${diffFila}%</td>
+                    <td><span class="badge-live">Auto Sync</span></td>
+                `;
+                tbody.appendChild(tr);
             });
-
-            if (registrosOnpe.length > 20) { registrosOnpe.shift(); }
-
-            localStorage.setItem('registros_onpe_data', JSON.stringify(registrosOnpe));
-            
-            // Actualizar la Curva
-            chartObjeto.data.labels = registrosOnpe.map(r => r.fecha.split(' ')[1]);
-            chartObjeto.data.datasets[0].data = registrosOnpe.map(r => r.actas);
-            chartObjeto.data.datasets[1].data = registrosOnpe.map(r => r.candA);
-            chartObjeto.data.datasets[2].data = registrosOnpe.map(r => r.candB);
-            chartObjeto.update();
-            
-            renderizarTabla();
         })
         .catch(err => {
-            console.error(err);
-            alert("Error de conexión. Asegúrate de haber publicado los cambios de tu Apps Script como una 'Nueva Versión'.");
-        })
-        .finally(() => {
-            btn.innerText = btnOriginalText;
-            btn.disabled = false;
+            console.error("Error cargando base de datos electoral: ", err);
         });
     }
 
-    function transferirDatosAGoogleExcel() {
-        const urlDestino = document.getElementById('scriptUrl').value.trim();
-        const filasPendientes = registrosOnpe.filter(r => !r.sync);
-        if (filasPendientes.length === 0) { alert("No hay actualizaciones nuevas para mandar."); return; }
-
-        let promesasEnvio = filasPendientes.map(elemento => {
-            return fetch(urlDestino, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(elemento)
-            }).then(() => { elemento.sync = true; });
-        });
-
-        Promise.all(promesasEnvio).then(() => {
-            localStorage.setItem('registros_onpe_data', JSON.stringify(registrosOnpe));
-            renderizarTabla();
-            alert("¡Sincronizado! Revisa tu documento Excel.");
-        });
-    }
-
+    // Inicialización al cargar la ventana
     window.onload = function() {
-        iniciarComponenteGrafico();
-        renderizarTabla();
+        inicializarGraficoVacio();
+        cargarDatosDesdeGoogle();
+        
+        // Auto-actualiza el dashboard visual de GitHub cada 30 segundos de forma pasiva
+        setInterval(cargarDatosDesdeGoogle, 30000);
     };
 </script>
 </body>
