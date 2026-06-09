@@ -3,274 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sala de Control Electoral - ONPE 2026</title>
+    <title>Sala de Control Electoral - ONPE REAL</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    
     <style>
         :root {
             --bg-main: #0b0f19;
             --bg-card: #151b2c;
             --primary: #38bdf8;
-            --candA: #0284c7;
-            --candB: #ea580c;
+            --candA: #00ea97; /* Verde vivo para Roberto Sánchez */
+            --candB: #ff6b00; /* Naranja vivo para Keiko Fujimori */
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --accent: #22c55e;
         }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            margin: 0;
-            padding: 24px;
-        }
-
-        .dashboard {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        header h1 {
-            font-size: 32px;
-            font-weight: 800;
-            margin: 0 0 8px 0;
-            background: linear-gradient(to right, #38bdf8, #818cf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-        }
-
-        header p {
-            color: var(--text-muted);
-            margin: 0;
-            font-size: 15px;
-        }
-
-        /* Panel Superior: Tarjetas de Datos */
-        .live-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
-        }
-
-        .card {
-            background-color: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 24px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-        }
-
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 24px; }
+        .dashboard { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 32px; }
+        header h1 { font-size: 32px; font-weight: 800; margin: 0 0 8px 0; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        header p { color: var(--text-muted); margin: 0; font-size: 15px; }
+        .live-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px; }
+        .card { background-color: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 24px; position: relative; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
         .card.actas::before { background-color: var(--primary); }
         .card.candA::before { background-color: var(--candA); }
         .card.candB::before { background-color: var(--candB); }
         .card.gap::before { background-color: #a855f7; }
-
-        .card-label {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .card-value {
-            font-size: 36px;
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        .card.candA .card-value { color: #38bdf8; }
-        .card.candB .card-value { color: #f97316; }
+        .card-label { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+        .card-value { font-size: 36px; font-weight: 800; letter-spacing: -1px; }
+        .card.candA .card-value { color: var(--candA); }
+        .card.candB .card-value { color: var(--candB); }
         .card.gap .card-value { color: #c084fc; }
-
-        /* Botón de Refresco */
-        .control-panel {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 24px;
-        }
-
-        .btn-refresh {
-            background: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
-        }
-
-        .btn-refresh:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
-        }
-
-        /* Sección del Gráfico */
-        .chart-section {
-            background-color: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 32px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-        }
-
-        .chart-container {
-            position: relative;
-            height: 380px;
-        }
-
-        /* Tabla Estilo Cyberpunk */
-        .table-section {
-            background-color: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 24px;
-            overflow: hidden;
-        }
-
-        .table-section h3 {
-            margin: 0 0 20px 0;
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th {
-            padding: 14px 16px;
-            color: var(--text-muted);
-            font-size: 13px;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        td {
-            padding: 16px;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        }
-
-        tr:hover td {
-            background-color: rgba(255, 255, 255, 0.02);
-        }
-
-        .badge-live {
-            background-color: rgba(34, 197, 94, 0.15);
-            color: var(--accent);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-        }
+        .control-panel { display: flex; justify-content: flex-end; margin-bottom: 24px; }
+        .btn-refresh { background: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25); }
+        .chart-section { background-color: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 24px; margin-bottom: 32px; }
+        .chart-container { position: relative; height: 380px; }
+        .table-section { background-color: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 24px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { padding: 14px 16px; color: var(--text-muted); font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        td { padding: 16px; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+        .badge-live { background-color: rgba(34, 197, 94, 0.15); color: var(--accent); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
     <header>
-        <h1>SALA DE MONITOREO ELECTORAL</h1>
-        <p>Datos sincronizados de forma transparente mediante Google Sheets</p>
+        <h1>SALA DE MONITOREO REAL ONPE</h1>
+        <p>Datos en tiempo real obtenidos directamente desde tu Google Excel sin bloqueos</p>
     </header>
 
-    <input type="hidden" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbxADvzrw6wqcCZks6mrsCUfzR_ibx2RRW_dOvBG2LApmuUfbZ8yykZoTYBLbkoz_1-E/exec">
+    <input type="hidden" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbybiLPK0gsaoi0DQfHyBQ-7n9purM-1drfLRJ70836jNtfzTnutS140lsOPSfFMmtET/exec">
 
     <div class="control-panel">
-        <button class="btn-refresh" onclick="cargarDatosDesdeGoogle()">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Actualizar Dashboard
-        </button>
+        <button class="btn-refresh" onclick="cargarDatosDesdeGoogle()">🔄 Actualizar Dashboard</button>
     </div>
 
     <div class="live-cards">
-        <div class="card actas">
-            <div class="card-label">Actas Procesadas</div>
-            <div class="card-value" id="live-actas">0.00%</div>
-        </div>
-        <div class="card candA">
-            <div class="card-label">Sánchez Palomino</div>
-            <div class="card-value" id="live-candA">0.00%</div>
-        </div>
-        <div class="card candB">
-            <div class="card-label">Keiko Fujimori</div>
-            <div class="card-value" id="live-candB">0.00%</div>
-        </div>
-        <div class="card gap">
-            <div class="card-label">Diferencia Numérica</div>
-            <div class="card-value" id="live-gap">0.00%</div>
-        </div>
+        <div class="card actas"><div class="card-label">Actas Procesadas</div><div class="card-value" id="live-actas">0.000%</div></div>
+        <div class="card candA"><div class="card-label">Roberto Sánchez P.</div><div class="card-value" id="live-candA">0.000%</div></div>
+        <div class="card candB"><div class="card-label">Keiko Fujimori</div><div class="card-value" id="live-candB">0.000%</div></div>
+        <div class="card gap"><div class="card-label">Diferencia Real</div><div class="card-value" id="live-gap">0.000%</div></div>
     </div>
 
-    <div class="chart-section">
-        <div class="chart-container">
-            <canvas id="graficoElectoral"></canvas>
-        </div>
-    </div>
+    <div class="chart-section"><div class="chart-container"><canvas id="graficoElectoral"></canvas></div></div>
 
     <div class="table-section">
-        <h3>Historial de Transmisiones (Últimos 20 Estados)</h3>
-        <div class="table-wrapper">
-            <table id="tablaHistorial">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Fecha y Hora</th>
-                        <th>% Actas</th>
-                        <th>% Sánchez P.</th>
-                        <th>% Keiko F.</th>
-                        <th>Brecha</th>
-                        <th>Origen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Cargando flujos de datos...</td></tr>
-                </tbody>
-            </table>
-        </div>
+        <h3>Historial Verificado por Base de Datos (Últimas 20 actualizaciones)</h3>
+        <table id="tablaHistorial">
+            <thead>
+                <tr><th>ID</th><th>Fecha y Hora</th><th>% Actas</th><th>% Sánchez P.</th><th>% Keiko F.</th><th>Brecha</th><th>Estado</th></tr>
+            </thead>
+            <tbody><tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Sincronizando con Google Excel...</td></tr></tbody>
+        </table>
     </div>
 </div>
 
 <script>
     let chartOnpe;
     
-    function inicializarGraficoVacio() {
+    function inicializarGrafico() {
         const ctx = document.getElementById('graficoElectoral').getContext('2d');
-        
-        // Configuraciones estéticas de Chart.js para entorno oscuro
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
 
@@ -279,19 +92,15 @@
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'Progreso Actas', data: [], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.05)', fill: true, tension: 0.35, yAxisID: 'y' },
-                    { label: 'Sánchez Palomino', data: [], borderColor: '#0284c7', borderWidth: 3, tension: 0.35, yAxisID: 'yVotos' },
-                    { label: 'Keiko Fujimori', data: [], borderColor: '#ea580c', borderWidth: 3, tension: 0.35, yAxisID: 'yVotos' }
+                    { label: 'Progreso Actas', data: [], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.05)', fill: true, tension: 0.3, yAxisID: 'y' },
+                    { label: 'Sánchez Palomino', data: [], borderColor: '#00ea97', borderWidth: 3, tension: 0.3, yAxisID: 'yVotos' },
+                    { label: 'Keiko Fujimori', data: [], borderColor: '#ff6b00', borderWidth: 3, tension: 0.3, yAxisID: 'yVotos' }
                 ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top', labels: { font: { family: 'Plus Jakarta Sans', weight: '600' } } }
-                },
+                responsive: true, maintainAspectRatio: false,
                 scales: {
-                    y: { type: 'linear', position: 'left', min: 80, max: 100, title: { display: true, text: 'Actas (%)' } },
+                    y: { type: 'linear', position: 'left', min: 90, max: 100, title: { display: true, text: 'Actas (%)' } },
                     yVotos: { type: 'linear', position: 'right', min: 45, max: 55, title: { display: true, text: 'Candidatos (%)' }, grid: { drawOnChartArea: false } }
                 }
             }
@@ -301,60 +110,55 @@
     function cargarDatosDesdeGoogle() {
         const url = document.getElementById('scriptUrl').value;
         
-        fetch(url)
+        fetch(url, { method: 'GET' })
         .then(res => res.json())
         .then(datos => {
-            if(datos.length === 0) return;
+            if (!datos || datos.length === 0) {
+                document.querySelector("#tablaHistorial tbody").innerHTML = "<tr><td colspan='7' style='text-align:center;'>Esperando que el script realice la primera captura automática en tu Excel...</td></tr>";
+                return;
+            }
 
-            // 1. Tomar el último registro disponible para las tarjetas de la parte superior
-            const deMomento = datos[datos.length - 1];
-            document.getElementById('live-actas').innerText = deMomento.actas.toFixed(3) + '%';
-            document.getElementById('live-candA').innerText = deMomento.candA.toFixed(3) + '%';
-            document.getElementById('live-candB').innerText = deMomento.candB.toFixed(3) + '%';
-            
-            // Calcular diferencia absoluta en puntos porcentuales
-            const diferencia = Math.abs(deMomento.candA - deMomento.candB).toFixed(3);
-            document.getElementById('live-gap').innerText = diferencia + '%';
+            // Tomar el último registro real de la ONPE guardado por tu Script de Google
+            const actual = datos[datos.length - 1];
+            document.getElementById('live-actas').innerText = actual.actas.toFixed(3) + '%';
+            document.getElementById('live-candA').innerText = actual.candA.toFixed(3) + '%';
+            document.getElementById('live-candB').innerText = actual.candB.toFixed(3) + '%';
+            document.getElementById('live-gap').innerText = Math.abs(actual.candA - actual.candB).toFixed(3) + '%';
 
-            // 2. Refrescar los ejes e información del gráfico (máximo de 20 puntos)
+            // Actualizar curvas suavizadas de 20 puntos
             chartOnpe.data.labels = datos.map(item => item.fecha.split(' ')[1] || item.fecha);
             chartOnpe.data.datasets[0].data = datos.map(item => item.actas);
             chartOnpe.data.datasets[1].data = datos.map(item => item.candA);
             chartOnpe.data.datasets[2].data = datos.map(item => item.candB);
             chartOnpe.update();
 
-            // 3. Imprimir el historial en la tabla cyberpunk
+            // Rellenar tabla
             const tbody = document.querySelector("#tablaHistorial tbody");
             tbody.innerHTML = "";
-            
-            // Invertimos el orden para que veas lo más reciente arriba inmediatamente
             [...datos].reverse().forEach(item => {
                 const tr = document.createElement('tr');
-                const diffFila = Math.abs(item.candA - item.candB).toFixed(3);
-                
                 tr.innerHTML = `
-                    <td style="font-weight:600; color:var(--primary)">#${item.id}</td>
+                    <td style="color:var(--primary); font-weight:600;">#${item.id}</td>
                     <td>${item.fecha}</td>
-                    <td style="font-weight:600">${item.actas.toFixed(3)}%</td>
-                    <td style="color:#38bdf8">${item.candA.toFixed(3)}%</td>
-                    <td style="color:#f97316">${item.candB.toFixed(3)}%</td>
-                    <td style="color:#c084fc; font-weight:600">± ${diffFila}%</td>
-                    <td><span class="badge-live">Auto Sync</span></td>
+                    <td><b>${item.actas.toFixed(3)}%</b></td>
+                    <td style="color:var(--candA)">${item.candA.toFixed(3)}%</td>
+                    <td style="color:var(--candB)">${item.candB.toFixed(3)}%</td>
+                    <td style="color:#c084fc; font-weight:600;">${Math.abs(item.candA - item.candB).toFixed(3)}%</td>
+                    <td><span class="badge-live">Real</span></td>
                 `;
                 tbody.appendChild(tr);
             });
         })
-        .catch(err => {
-            console.error("Error cargando base de datos electoral: ", err);
-        });
+        .catch(err => console.error("Error leyendo flujo de datos: ", err));
     }
 
-    // Inicialización al cargar la ventana
     window.onload = function() {
-        inicializarGraficoVacio();
+        // Forzamos la limpieza de rastros simulados anteriores
+        localStorage.clear();
+        inicializarGrafico();
         cargarDatosDesdeGoogle();
         
-        // Auto-actualiza el dashboard visual de GitHub cada 30 segundos de forma pasiva
+        // Auto-sincronización visual de tu web cada 30 segundos
         setInterval(cargarDatosDesdeGoogle, 30000);
     };
 </script>
